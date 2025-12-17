@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.pyc
+*.pyo
+
+# 虚拟环境
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 项目特定
+extracted_events.json
+extracted_events_deduped.json
+
+# 敏感信息
+.env
+*.key
+credentials.json
+
+# 测试文件
+test_*.py
+debug_*.py
