@@ -7,11 +7,10 @@ from difflib import SequenceMatcher
 from config import SCHEMA
 from prompts import PROMPT_TEMPLATE
 
-# Hugging Face token - 从环境变量读取
-# 使用前请设置: export HF_TOKEN=your_token_here
+# 初始化 HuggingFace Inference API 
 hf_token = os.getenv('HF_TOKEN')
 if not hf_token:
-    raise ValueError("请设置 HF_TOKEN 环境变量")
+    raise ValueError("未设置 HF_TOKEN 环境变量")
 client = InferenceClient(model="Qwen/Qwen2.5-7B-Instruct")
 
 def read_document(file_path):
@@ -23,7 +22,7 @@ def read_document(file_path):
         title_elements = tree.xpath('/html/head/title/text()')
         title = title_elements[0] if title_elements else "网页内容"
 
-        # 尝试多种XPath选择器来提取正文
+        # 提取链接里的文本
         paragraphs = []
         selectors = [
             '//div[@id="artibody"]//p//text()',  
@@ -156,10 +155,7 @@ def deduplicate_events(events, content_threshold=0.75):
 
         for i, unique_event in enumerate(unique_events):
             unique_content = unique_event.get("内容", "")
-
-            # 计算内容相似度
             sim = SequenceMatcher(None, event_content, unique_content).ratio()
-
             if sim >= content_threshold:
                 # 发现重复,保留内容更长的版本
                 is_duplicate = True
@@ -191,15 +187,15 @@ def main():
         print("-" * 80)
 
         try:
-            # 1. 读取网页内容并改为md格式
+            # 读取网页内容并改为md格式
             content = read_document(url)
             print(f"  ✓ 内容长度: {len(content)} 字符")
 
-            # 2. 分割段落&切片
+            # 分割段落&切片
             slices = segment_into_slices(content)
             print(f"  ✓ 切片数量: {len(slices)}")
 
-            # 3. 提取事件
+            # 提取事件
             url_events_count = 0
             for i, slice_text in enumerate(slices):
                 slice_id = f"{url}_slice_{i+1}"
@@ -220,16 +216,15 @@ def main():
     print(f"\n{'='*60}")
     print(f"去重前事件数: {len(all_events)}")
 
-    # 4. 去重
+    # 去重
     all_events = deduplicate_events(all_events, content_threshold=0.75)
     print(f"去重后事件数: {len(all_events)}")
     print(f"{'='*60}")
 
-    # 5. 输出结果
+    # 输出结果并保存
     print("\n提取的事件:")
     print(json.dumps(all_events, ensure_ascii=False, indent=2))
 
-    # 保存到文件
     with open('extracted_events.json', 'w', encoding='utf-8') as f:
         json.dump(all_events, f, ensure_ascii=False, indent=2)
     print("结果已保存到 extracted_events.json")
