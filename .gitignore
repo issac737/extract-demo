@@ -23,6 +23,11 @@ env/
 extracted_events.json
 extracted_events_deduped.json
 
+# 数据集文件夹
+test_data/
+finewiki_level1_classified/
+extracted_events_temp.json
+
 # 敏感信息
 .env
 *.key
